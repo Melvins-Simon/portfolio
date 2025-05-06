@@ -1,13 +1,31 @@
 import { motion } from "framer-motion";
 import { TypeAnimation } from "react-type-animation";
-import { useState } from "react";
-import Unauthorized from "./Unauthorized";
-import { Navigate } from "react-router-dom";
+import { useContext, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
-
+import axios from "axios";
+import toast from "react-hot-toast";
+import { Globalstate } from "../context/Globalcontext";
 const Portfolio = () => {
+  const { isAuthenticated, setIsAuthenticated } = useContext(Globalstate);
   const [activeTab, setActiveTab] = useState("home");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  axios.defaults.withCredentials = true;
+  const navigate = useNavigate();
+
+  const Handleactive = async (tab) => {
+    setActiveTab(tab);
+    if (tab === "admin") {
+      try {
+        const res = await axios.get("http://localhost:5000/api/check-auth");
+        setIsAuthenticated(true);
+        navigate("/admin");
+        toast.success(res.data.message || "Reconnected!");
+      } catch (error) {
+        navigate("/unauthorized");
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-800 text-white">
@@ -26,14 +44,14 @@ const Portfolio = () => {
                 Melvins Simon
               </motion.span>
             </div>
-            <div className="hidden md:flex items-center space-x-8">
+            <div className="hidden md:flex items-center space-x-8 ">
               {["home", "about", "projects", "contact", "admin"].map((tab) => (
                 <motion.button
                   key={tab}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => setActiveTab(tab)}
-                  className={`capitalize px-3 py-2 rounded-md text-sm font-medium ${
+                  onClick={() => Handleactive(tab)}
+                  className={`capitalize px-3 py-2 rounded-md text-sm font-medium cursor-pointer ${
                     activeTab === tab
                       ? "bg-purple-600 text-white"
                       : "text-gray-300 hover:bg-gray-800 hover:text-white"
@@ -134,7 +152,13 @@ const Portfolio = () => {
         {activeTab === "about" && <AboutSection />}
         {activeTab === "projects" && <ProjectsSection />}
         {activeTab === "contact" && <ContactSection />}
-        {activeTab === "admin" && <Navigate to={"/unauthorized"} />}
+        {activeTab === "admin" && isAuthenticated ? (
+          <Navigate to={"/admin"} />
+        ) : activeTab === "admin" && !isAuthenticated ? (
+          <Navigate to={"/unauthorized"} />
+        ) : (
+          ""
+        )}
       </main>
 
       {/* Footer */}
@@ -445,6 +469,7 @@ const ContactSection = () => {
     email: "",
     message: "",
   });
+  const [isLoading, setisLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -454,10 +479,24 @@ const ContactSection = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission
-    console.log("Form submitted:", formData);
+    setisLoading(false);
+    try {
+      setisLoading(true);
+      const res = await axios.post("http://localhost:5000/api/send-message", {
+        username: formData.name,
+        email: formData.email,
+        message: formData.message,
+      });
+      setisLoading(false);
+      setFormData({ name: "", email: "", message: "" });
+      toast.success(res.data.message || "Message submition success!");
+    } catch (error) {
+      setisLoading(false);
+      console.error("ERROR: ", error);
+      toast.error(error.response.data.message || "Message submition failed!");
+    }
   };
 
   return (
@@ -551,7 +590,14 @@ const ContactSection = () => {
             type="submit"
             className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-md font-medium"
           >
-            Send Message
+            {isLoading ? (
+              <div className="flex justify-center items-center gap-2">
+                <span>Sending Message...</span>
+                <span className="h-4 w-4 border-l-2 border-t-2 border-blue-50 rounded-full animate-spin" />
+              </div>
+            ) : (
+              "Send Message"
+            )}
           </motion.button>
         </form>
 

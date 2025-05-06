@@ -1,9 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { motion } from "framer-motion";
 import Loader from "../components/Loader";
 import { useNavigate } from "react-router-dom";
+import { Globalstate } from "../context/Globalcontext";
 
 const Dashboard = () => {
+  const { isAuthenticated, setIsAuthenticated } = useContext(Globalstate);
+
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const [profile, setProfile] = useState({
