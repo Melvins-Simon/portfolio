@@ -1,5 +1,6 @@
+import { cloudinary } from "../middlewares/cloudinary.js";
 import { gen_jwt } from "../middlewares/jwt.js";
-import { Message, User } from "../models/portfolio_models.js";
+import { Message, Project, User } from "../models/portfolio_models.js";
 import bcrypt from "bcryptjs";
 import "dotenv/config";
 
@@ -85,7 +86,6 @@ export const signin = async (req, res) => {
 };
 
 // checkAuth
-
 export const check_auth = async (req, res) => {
   const user_id = req.user_id;
   try {
@@ -101,6 +101,7 @@ export const check_auth = async (req, res) => {
   }
 };
 
+// logout
 export const logout = async (req, res) => {
   try {
     res.clearCookie("auth_token");
@@ -110,6 +111,7 @@ export const logout = async (req, res) => {
   }
 };
 
+// remove admin
 export const remove_admin = async (req, res) => {
   const { id } = req.body;
   try {
@@ -126,6 +128,84 @@ export const remove_admin = async (req, res) => {
     res
       .status(200)
       .json({ success: true, message: "User removed successfully!", users });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+};
+
+// add project
+export const add_project = async (req, res) => {
+  const { title, description, tags, link, image } = req.body;
+  try {
+    if (!title || !description || !tags || !link || !image)
+      return res.status(400).json({
+        success: false,
+        message: "Please provide all the project detals!",
+      });
+    const proj = await Project.findOne({ link });
+    if (proj)
+      return res
+        .status(400)
+        .json({ success: false, message: "The project already exist!" });
+
+    const result = await cloudinary.uploader.upload(image, {
+      folder: "portfolio",
+      resource_type: "auto",
+    });
+    const newProject = new Project({
+      title,
+      description,
+      tags,
+      link,
+      image: result.secure_url,
+    });
+    await newProject.save();
+    const projects = await Project.find();
+
+    res.status(200).json({
+      success: true,
+      message: "Project added successfully!",
+      projects,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+};
+
+// delete project
+export const delete_project = async (req, res) => {
+  const { id } = req.body;
+  try {
+    if (!id)
+      return res.status(400).json({
+        success: false,
+        message: "Provide the required detail!",
+      });
+    const project = await Project.findByIdAndDelete(id);
+    if (!project)
+      return res.status(404).json({
+        success: false,
+        message: "No project found with the specified id!",
+      });
+    const projects = await Project.find();
+    res.status(200).json({
+      success: true,
+      message: "Project deleted successfully!",
+      projects,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal server error." });
+  }
+};
+
+export const get_projects = async (req, res) => {
+  try {
+    const projects = await Project.find();
+    res.status(200).json({
+      success: true,
+      message: "Projects loaded!",
+      projects,
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: "Internal server error." });
   }

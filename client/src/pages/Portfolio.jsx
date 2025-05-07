@@ -346,7 +346,7 @@ const ProjectsSection = () => {
         "Built with Azure OpenAI and Microsoft Fabric for real-time business insights with automated report generation and predictive analytics.",
       tags: ["Azure", "AI", "Power BI", "Fabric"],
       link: "#",
-      image: "/project1.jpg",
+      image: "/melvins.png",
     },
     {
       title: "Enterprise RAG System",
@@ -354,7 +354,7 @@ const ProjectsSection = () => {
         "Retrieval-Augmented Generation implementation for knowledge management with semantic search and document understanding.",
       tags: ["LangChain", "LLMs", "Vector DB", "Azure AI"],
       link: "#",
-      image: "/project2.jpg",
+      image: "/melvins.png",
     },
     {
       title: "Cloud Data Pipeline",
@@ -362,7 +362,7 @@ const ProjectsSection = () => {
         "ETL workflow processing TBs of data daily with Azure Data Factory, Databricks and Synapse Analytics.",
       tags: ["ETL", "Azure", "PySpark", "Data Engineering"],
       link: "#",
-      image: "/project3.jpg",
+      image: "/melvins.png",
     },
     {
       title: "AI Agent Framework",
@@ -370,7 +370,7 @@ const ProjectsSection = () => {
         "Custom autonomous agent system for automating business processes with LLM decision making.",
       tags: ["AI Agents", "OpenAI", "Function Calling"],
       link: "#",
-      image: "/project4.jpg",
+      image: "/melvins.png",
     },
     {
       title: "Real-time Dashboard",
@@ -378,7 +378,7 @@ const ProjectsSection = () => {
         "React-powered dashboard with WebSocket connections to display live data streams from IoT devices.",
       tags: ["React", "WebSockets", "D3.js", "Tailwind"],
       link: "#",
-      image: "/project5.jpg",
+      image: "/melvins.png",
     },
     {
       title: "ML Model Serving API",
@@ -386,7 +386,7 @@ const ProjectsSection = () => {
         "Scalable API for serving TensorFlow models with Django REST framework and Kubernetes.",
       tags: ["MLOps", "Django", "TensorFlow", "K8s"],
       link: "#",
-      image: "/project6.jpg",
+      image: "/melvins.png",
     },
   ];
 
@@ -588,7 +588,7 @@ const ContactSection = () => {
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             type="submit"
-            className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-md font-medium"
+            className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-md font-medium cursor-pointer"
           >
             {isLoading ? (
               <div className="flex justify-center items-center gap-2">
@@ -609,16 +609,6 @@ const ContactSection = () => {
         >
           <h3 className="text-xl font-semibold mb-4">Or connect directly</h3>
           <div className="flex justify-center space-x-6">
-            <motion.a
-              whileHover={{ y: -5 }}
-              href="mailto:melvinssimon@gmail.com"
-              className="text-gray-300 hover:text-white"
-              aria-label="Email"
-            >
-              <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
-              </svg>
-            </motion.a>
             <motion.a
               whileHover={{ y: -5 }}
               href="https://www.linkedin.com/in/melvinssimon/"
