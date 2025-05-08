@@ -1,4 +1,4 @@
-# 🌟 Melvin's Portfolio Project
+# 🌟 Melvins Simon Portfolio Project
 
 **LIVE LINK:** [Portfolio]()
 
