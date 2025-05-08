@@ -6,6 +6,13 @@ export const Globalstate = createContext(null);
 function Globalcontext({ children }) {
   axios.defaults.withCredentials = true;
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [banner, setbanner] = useState("");
+  const [proj, setproj] = useState({
+    title: "",
+    link: "",
+    description: "",
+    tags: [],
+  });
   useEffect(() => {
     (async () => {
       try {
@@ -18,7 +25,16 @@ function Globalcontext({ children }) {
     })();
   }, []);
   return (
-    <Globalstate.Provider value={{ isAuthenticated, setIsAuthenticated }}>
+    <Globalstate.Provider
+      value={{
+        isAuthenticated,
+        setIsAuthenticated,
+        banner,
+        setbanner,
+        proj,
+        setproj,
+      }}
+    >
       {children}
     </Globalstate.Provider>
   );

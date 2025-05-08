@@ -4,6 +4,7 @@ import condb from "./db/connDB.js";
 import router from "./routers/portfolio_router.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import fileUpload from "express-fileupload";
 
 const app = express();
 
@@ -16,6 +17,12 @@ app.use(
   })
 );
 app.use(cookieParser());
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+  })
+);
 
 app.use("/api", router);
 app.listen(process.env.PORT || 3000, () => {

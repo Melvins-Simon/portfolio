@@ -3,12 +3,16 @@ import { motion } from "framer-motion";
 import Loader from "../components/Loader";
 import { useNavigate } from "react-router-dom";
 import { Globalstate } from "../context/Globalcontext";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const Dashboard = () => {
-  const { isAuthenticated, setIsAuthenticated } = useContext(Globalstate);
-
+  axios.defaults.withCredentials = true;
+  const API_URL = "http://localhost:5000/api";
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const { proj, setproj } = useContext(Globalstate);
+
   const [profile, setProfile] = useState({
     name: "Melvins Simon",
     title: "Full-Stack AI Engineer | Cloud & Data Systems",
@@ -36,20 +40,8 @@ const Dashboard = () => {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        // Simulate API calls
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
-        setProjects([
-          {
-            id: 1,
-            title: "AI-Powered Analytics Platform",
-            description:
-              "Built with Azure OpenAI and Microsoft Fabric for real-time business insights.",
-            tags: ["Azure", "AI", "Power BI"],
-            image: "/project1.jpg",
-          },
-          // ... other projects
-        ]);
+        const projRes = await axios.get(`${API_URL}/get-projects`);
+        setProjects(projRes.data.projects);
 
         setSkills([
           { id: 1, name: "AI/ML", level: 90 },
@@ -58,27 +50,13 @@ const Dashboard = () => {
 
         setSocialLinks({
           email: "melvinssimon@gmail.com",
-          linkedin: "https://linkedin.com/in/yourprofile",
-          github: "https://github.com/yourusername",
-          twitter: "https://twitter.com/yourhandle",
+          linkedin: "https://www.linkedin.com/in/melvinssimon/",
+          github: "https://github.com/Melvins-Simon/",
+          twitter: "https://twitter.com/Melvinssimon/",
         });
 
-        setMessages([
-          {
-            id: 1,
-            name: "John Doe",
-            email: "john@example.com",
-            message: "Interested in your AI services",
-            date: "2023-05-15",
-          },
-          {
-            id: 2,
-            name: "Jane Smith",
-            email: "jane@example.com",
-            message: "Looking for a collaboration",
-            date: "2023-05-10",
-          },
-        ]);
+        const msgRes = await axios.get(`${API_URL}/get-messages`);
+        setMessages(msgRes.data.messages);
       } catch (error) {
         console.error("Error loading data:", error);
       } finally {
@@ -98,6 +76,7 @@ const Dashboard = () => {
     const newProject = {
       id: projects.length + 1,
       title: "New Project",
+      link: "http://github.com/project-link",
       description: "Project description",
       tags: [],
       image: "/project-default.jpg",
@@ -107,6 +86,7 @@ const Dashboard = () => {
   };
 
   const updateProject = (id, field, value) => {
+    setproj({ ...proj, [field]: value });
     setProjects(
       projects.map((project) =>
         project.id === id ? { ...project, [field]: value } : project
@@ -114,9 +94,15 @@ const Dashboard = () => {
     );
   };
 
-  const deleteProject = (id) => {
-    setProjects(projects.filter((project) => project.id !== id));
-    showNotification("Project deleted");
+  const deleteProject = async (id) => {
+    const API_URL = "http://localhost:5000/api";
+    try {
+      setProjects(projects.filter((project) => project.id !== id));
+      showNotification("Project deleted");
+      await axios.post(`${API_URL}/delete-project`, { id });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const updateProfile = (field, value) => {
@@ -224,25 +210,30 @@ const Dashboard = () => {
             className="md:hidden bg-gray-900/95"
           >
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              {["projects", "profile", "skills", "social", "messages"].map(
-                (tab) => (
-                  <motion.button
-                    key={tab}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      setActiveTab(tab);
-                      setMobileMenuOpen(false);
-                    }}
-                    className={`w-full text-left px-3 py-2 rounded-md text-base font-medium cursor-pointer ${
-                      activeTab === tab
-                        ? "bg-purple-600 text-white"
-                        : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                    }`}
-                  >
-                    {tab}
-                  </motion.button>
-                )
-              )}
+              {[
+                "projects",
+                "profile",
+                "skills",
+                "social",
+                "messages",
+                "hero",
+              ].map((tab) => (
+                <motion.button
+                  key={tab}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setActiveTab(tab);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 rounded-md text-base font-medium cursor-pointer ${
+                    activeTab === tab
+                      ? "bg-purple-600 text-white"
+                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                  }`}
+                >
+                  {tab}
+                </motion.button>
+              ))}
             </div>
           </motion.div>
         )}
@@ -294,16 +285,20 @@ const Dashboard = () => {
   );
 };
 
-// ProjectsTab component (updated with cursor pointers)
+// ProjectsTab component
 const ProjectsTab = ({
   projects,
   updateProject,
   deleteProject,
   addProject,
 }) => {
+  const API_URL = "http://localhost:5000/api";
+  axios.defaults.withCredentials = true;
   const [editingId, setEditingId] = useState(null);
   const [newTag, setNewTag] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const bannerRef = useRef();
+  const { banner, setbanner, proj } = useContext(Globalstate);
 
   const addTag = (projectId) => {
     if (!newTag.trim()) return;
@@ -323,12 +318,36 @@ const ProjectsTab = ({
     );
   };
 
-  const handleSave = (id) => {
-    setIsSaving(true);
-    setTimeout(() => {
-      setEditingId(null);
-      setIsSaving(false);
-    }, 800);
+  const handleSave = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("title", proj.title);
+      formData.append("description", proj.description);
+      formData.append("tags", JSON.stringify(proj.tags));
+      formData.append("link", proj.link);
+      formData.append("image", banner);
+
+      console.log(banner);
+      console.log(formData);
+      setIsSaving(true);
+      setTimeout(() => {
+        setEditingId(null);
+        setIsSaving(false);
+      }, 800);
+      await axios.post(`${API_URL}/add-project`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const HnadleuploadBanner = () => {
+    bannerRef.current.click();
+  };
+  const HnadleBanner = (e) => {
+    setbanner(e.target.files[0]);
   };
 
   return (
@@ -365,16 +384,26 @@ const ProjectsTab = ({
               animate={{ y: 0, opacity: 1 }}
               className="bg-gray-800/50 rounded-xl overflow-hidden border border-gray-700 hover:border-purple-500 transition-all"
             >
-              <div className="p-6">
+              <div className="p-6 overflow-hidden">
                 {editingId === project.id ? (
-                  <input
-                    type="text"
-                    value={project.title}
-                    onChange={(e) =>
-                      updateProject(project.id, "title", e.target.value)
-                    }
-                    className="w-full px-3 py-2 bg-gray-700 rounded mb-2 cursor-text"
-                  />
+                  <>
+                    <input
+                      type="text"
+                      value={project.title}
+                      onChange={(e) =>
+                        updateProject(project.id, "title", e.target.value)
+                      }
+                      className="w-full px-3 py-2 bg-gray-700 rounded mb-2 cursor-text"
+                    />{" "}
+                    <input
+                      type="text"
+                      value={project.link}
+                      onChange={(e) =>
+                        updateProject(project.id, "link", e.target.value)
+                      }
+                      className="w-full px-3 py-2 bg-gray-700 rounded mb-2 cursor-text"
+                    />
+                  </>
                 ) : (
                   <h3 className="text-xl font-bold mb-2 cursor-default">
                     {project.title}
@@ -434,9 +463,9 @@ const ProjectsTab = ({
                   )}
                 </div>
 
-                <div className="flex justify-between">
+                <div className="flex justify-between  w-full">
                   {editingId === project.id ? (
-                    <>
+                    <div className=" flex justify-between  w-full items-center">
                       <button
                         onClick={() => handleSave(project.id)}
                         disabled={isSaving}
@@ -470,13 +499,31 @@ const ProjectsTab = ({
                           "Save"
                         )}
                       </button>
+
+                      <div>
+                        <input
+                          ref={bannerRef}
+                          onChange={(e) => HnadleBanner(e)}
+                          name="banner"
+                          className="hidden"
+                          type="file"
+                        />
+                        <label
+                          className="px-3 py-1 bg-green-600 rounded text-sm cursor-pointer"
+                          htmlFor="banner"
+                          onClick={HnadleuploadBanner}
+                        >
+                          Banner
+                        </label>
+                      </div>
+
                       <button
                         onClick={() => deleteProject(project.id)}
                         className="px-3 py-1 bg-red-600 rounded text-sm cursor-pointer"
                       >
                         Delete
                       </button>
-                    </>
+                    </div>
                   ) : (
                     <button
                       onClick={() => setEditingId(project.id)}
@@ -496,37 +543,91 @@ const ProjectsTab = ({
 };
 
 // Profile Management Tab
+
 const ProfileTab = ({ profile, updateProfile }) => {
-  const [imagePreview, setImagePreview] = useState(profile.image);
+  const [imagePreview, setImagePreview] = useState(profile?.image?.url || "");
+  const [img, setImg] = useState(null);
+  const [techStack, setTechStack] = useState(profile?.techStack || []);
+  const [newTech, setNewTech] = useState("");
+  const [welcomeText, setWelcomeText] = useState(profile?.welcomeText || "");
+  const imgRef = useRef(null);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
+    setImg(file);
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
-        updateProfile("image", reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const imgRef = useRef(null);
+  const addTech = () => {
+    if (newTech.trim() && !techStack.includes(newTech.trim())) {
+      setTechStack([...techStack, newTech.trim()]);
+      setNewTech("");
+    }
+  };
+
+  const removeTech = (index) => {
+    setTechStack(techStack.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async () => {
+    const formData = new FormData();
+    formData.append("name", profile.name);
+    formData.append("title", profile.title);
+    formData.append("bio", profile.bio);
+    formData.append("welcomeText", welcomeText);
+    formData.append("techStack", JSON.stringify(techStack));
+    if (img) formData.append("image", img);
+
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/update-profile",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      toast.success(res.data.message);
+    } catch (error) {
+      console.error("Update error:", error);
+    }
+  };
 
   return (
     <motion.section
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
-      className="py-8  max-w-7xl mx-auto"
+      className="py-8 max-w-7xl mx-auto px-4"
     >
       <h2 className="text-3xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
         Manage Profile
       </h2>
 
       <div className="grid md:grid-cols-2 gap-8">
-        <div>
-          <div className="mb-4">
+        {/* Left Column - Form Fields */}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Welcome Text
+            </label>
+            <input
+              type="text"
+              value={welcomeText}
+              onChange={(e) => setWelcomeText(e.target.value)}
+              className="w-full px-3 py-2 bg-gray-700 rounded"
+              placeholder="Welcome to my portfolio!"
+            />
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">
               Name
             </label>
@@ -538,7 +639,7 @@ const ProfileTab = ({ profile, updateProfile }) => {
             />
           </div>
 
-          <div className="mb-4">
+          <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">
               Title
             </label>
@@ -550,7 +651,7 @@ const ProfileTab = ({ profile, updateProfile }) => {
             />
           </div>
 
-          <div className="mb-4">
+          <div>
             <label className="block text-sm font-medium text-gray-300 mb-1">
               Bio
             </label>
@@ -560,22 +661,67 @@ const ProfileTab = ({ profile, updateProfile }) => {
               className="w-full px-3 py-2 bg-gray-700 rounded min-h-[150px]"
             />
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Tech Stack
+            </label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {techStack.map((tech, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center px-2 py-1 bg-gray-700 rounded-full text-xs"
+                >
+                  {tech}
+                  <button
+                    onClick={() => removeTech(index)}
+                    className="ml-1 text-gray-400 hover:text-white"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex">
+              <input
+                type="text"
+                value={newTech}
+                onChange={(e) => setNewTech(e.target.value)}
+                onKeyUp={(e) => e.key === "Enter" && addTech()}
+                placeholder="Add technology"
+                className="flex-1 px-3 py-2 bg-gray-700 rounded-l"
+              />
+              <button
+                onClick={addTech}
+                className="px-3 py-2 bg-purple-600 rounded-r hover:bg-purple-500 transition-colors cursor-pointer"
+              >
+                Add
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div>
-          <div className="mb-4 flex justify-center items-center flex-col">
-            <label className="block text-gray-300 mb-1 font-semibold">
+        {/* Right Column - Image and Preview */}
+        <div className="space-y-6">
+          <div className="flex flex-col items-center">
+            <label className="block text-gray-300 mb-2 font-semibold">
               Profile Image
             </label>
-            <div className="relative flex justify-center items-center">
-              <div className="relative w-max  rounded-lg p-1">
+            <div className="relative group">
+              <div className="w-64 h-64 rounded-full overflow-hidden border-2 border-gray-600">
                 <img
-                  src={
-                    imagePreview ? imagePreview : "https://shorturl.at/Vu5Xf"
-                  }
+                  src={imagePreview || "/default-profile.png"}
                   alt="Profile Preview"
-                  className="rounded-lg w-72 h-72"
+                  className="w-full h-full object-cover"
                 />
+              </div>
+              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                <button
+                  onClick={() => imgRef.current.click()}
+                  className="px-4 py-2 bg-purple-600 rounded-md hover:bg-purple-500 transition-colors cursor-pointer"
+                >
+                  Change Image
+                </button>
               </div>
             </div>
             <input
@@ -584,25 +730,42 @@ const ProfileTab = ({ profile, updateProfile }) => {
               onChange={handleImageChange}
               accept="image/*"
               className="hidden"
-              name="image"
             />
-            <label
-              htmlFor="image"
-              onClick={(e) => imgRef.current.click()}
-              className="px-2 py-1 rounded-md bg-purple-600 hover:bg-purple-500 cursor-pointer ease-in-out duration-200"
-            >
-              Upload image
-            </label>
+            <p className="mt-2 text-xs text-gray-400">
+              Recommended: 500×500px, JPG/PNG
+            </p>
           </div>
 
-          <div className="mt-8">
-            <h3 className="text-lg font-semibold mb-2">Preview</h3>
-            <div className="bg-gray-800/50 p-4 rounded-lg">
-              <h2 className="text-2xl font-bold mb-2">{profile.name}</h2>
-              <p className="text-purple-400 mb-2">{profile.title}</p>
+          <div className="bg-gray-800/50 p-6 rounded-lg">
+            <h3 className="text-lg font-semibold mb-4">Profile Preview</h3>
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-xl font-bold">{profile.name}</h4>
+                <p className="text-purple-400">{profile.title}</p>
+              </div>
+              <div className="bg-gray-700/50 p-3 rounded">
+                <p className="text-gray-300 italic">"{welcomeText}"</p>
+              </div>
               <p className="text-gray-300">{profile.bio}</p>
+              <div className="flex flex-wrap gap-2">
+                {techStack.map((tech, index) => (
+                  <span
+                    key={index}
+                    className="px-2 py-1 bg-gray-700 rounded-full text-xs"
+                  >
+                    {tech}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
+
+          <button
+            onClick={handleSubmit}
+            className="w-full py-2 bg-green-600 hover:bg-green-500 transition-colors rounded-md font-medium cursor-pointer"
+          >
+            Save Profile
+          </button>
         </div>
       </div>
     </motion.section>
@@ -610,34 +773,72 @@ const ProfileTab = ({ profile, updateProfile }) => {
 };
 
 // Skills Management Tab
-const SkillsTab = ({ skills, setSkills }) => {
+const SkillsTab = () => {
+  const API_URL = "http://localhost:5000/api";
+  const [skills, setSkills] = useState([]);
   const [newSkill, setNewSkill] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const addSkill = () => {
+  useEffect(() => {
+    const fetchSkills = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/skills`);
+        setSkills(res.data.skills);
+      } catch (error) {
+        console.error("Error fetching skills:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSkills();
+  }, []);
+
+  const addSkill = async () => {
     if (!newSkill.trim()) return;
-    setSkills([
-      ...skills,
-      { id: skills.length + 1, name: newSkill, level: 50 },
-    ]);
-    setNewSkill("");
+    try {
+      const res = await axios.post(`${API_URL}/skills`, { name: newSkill });
+      setSkills([...skills, res.data.skill]);
+      setNewSkill("");
+    } catch (error) {
+      console.error("Error adding skill:", error);
+      alert(error.response?.data?.message || "Failed to add skill");
+    }
   };
 
-  const updateSkillLevel = (id, level) => {
-    setSkills(
-      skills.map((skill) => (skill.id === id ? { ...skill, level } : skill))
+  const updateSkillLevel = async (id, level) => {
+    try {
+      await axios.put(`${API_URL}/skills/${id}`, { level });
+      setSkills(
+        skills.map((skill) => (skill._id === id ? { ...skill, level } : skill))
+      );
+    } catch (error) {
+      console.error("Error updating skill:", error);
+    }
+  };
+
+  const deleteSkill = async (id) => {
+    try {
+      await axios.delete(`${API_URL}/skills/${id}`);
+      setSkills(skills.filter((skill) => skill._id !== id));
+    } catch (error) {
+      console.error("Error deleting skill:", error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="py-8 max-w-7xl mx-auto flex justify-center">
+        <div className="animate-pulse text-gray-400">Loading skills...</div>
+      </div>
     );
-  };
-
-  const deleteSkill = (id) => {
-    setSkills(skills.filter((skill) => skill.id !== id));
-  };
+  }
 
   return (
     <motion.section
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
-      className="py-8  max-w-7xl mx-auto"
+      className="py-8 max-w-7xl mx-auto"
     >
       <h2 className="text-3xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
         Manage Skills
@@ -648,6 +849,7 @@ const SkillsTab = ({ skills, setSkills }) => {
           type="text"
           value={newSkill}
           onChange={(e) => setNewSkill(e.target.value)}
+          onKeyUp={(e) => e.key === "Enter" && addSkill()}
           placeholder="New skill name"
           className="flex-1 px-3 py-2 bg-gray-700 rounded-l"
         />
@@ -661,11 +863,11 @@ const SkillsTab = ({ skills, setSkills }) => {
 
       <div className="space-y-6">
         {skills.map((skill) => (
-          <div key={skill.id} className="bg-gray-800/50 p-4 rounded-lg">
+          <div key={skill._id} className="bg-gray-800/50 p-4 rounded-lg">
             <div className="flex justify-between items-center mb-2">
               <span className="font-medium">{skill.name}</span>
               <button
-                onClick={() => deleteSkill(skill.id)}
+                onClick={() => deleteSkill(skill._id)}
                 className="text-red-400 hover:text-red-300 cursor-pointer"
               >
                 Delete
@@ -678,7 +880,7 @@ const SkillsTab = ({ skills, setSkills }) => {
                 max="100"
                 value={skill.level}
                 onChange={(e) =>
-                  updateSkillLevel(skill.id, parseInt(e.target.value))
+                  updateSkillLevel(skill._id, parseInt(e.target.value))
                 }
                 className="flex-1"
               />
@@ -690,7 +892,6 @@ const SkillsTab = ({ skills, setSkills }) => {
     </motion.section>
   );
 };
-
 // Social Links Management Tab
 const SocialTab = ({ socialLinks, updateSocialLink }) => {
   const socialPlatforms = [

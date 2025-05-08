@@ -1,11 +1,13 @@
 import { motion } from "framer-motion";
 import { TypeAnimation } from "react-type-animation";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import Logo from "../components/Logo";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { Globalstate } from "../context/Globalcontext";
+import Loader from "../components/Loader";
+
 const Portfolio = () => {
   const { isAuthenticated, setIsAuthenticated } = useContext(Globalstate);
   const [activeTab, setActiveTab] = useState("home");
@@ -33,7 +35,10 @@ const Portfolio = () => {
       <nav className="fixed w-full bg-gray-900/80 backdrop-blur-md z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex items-center cursor-pointer">
+            <div
+              onClick={() => setActiveTab("home")}
+              className="flex items-center cursor-pointer"
+            >
               <Logo />
               <motion.span
                 initial={{ opacity: 0 }}
@@ -175,6 +180,47 @@ const Portfolio = () => {
 
 // Hero Section Component
 const HeroSection = ({ setActiveTab }) => {
+  const API_URL = "http://localhost:5000/api";
+  axios.defaults.withCredentials = true;
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/get-profile`);
+        setProfile(res.data.profile);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        setProfile({
+          techStack: [
+            "Full-Stack Developer",
+            "AI Engineer",
+            "Cloud Specialist",
+          ],
+          welcomeText:
+            "I design and deploy scalable AI-integrated applications",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  // Fallback tech stack
+  const techStack = profile?.techStack?.length
+    ? profile.techStack
+    : ["Full-Stack Developer", "AI Engineer", "Cloud Specialist"];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[80vh]">
+        <div className="animate-pulse text-gray-400">Loading profile...</div>
+      </div>
+    );
+  }
+
   return (
     <motion.section
       initial={{ opacity: 0 }}
@@ -182,29 +228,30 @@ const HeroSection = ({ setActiveTab }) => {
       transition={{ duration: 0.8 }}
       className="py-20 flex flex-col items-center justify-center min-h-[80vh]"
     >
-      <div className="text-center max-w-3xl">
+      <div className="text-center max-w-3xl px-4">
         <motion.h1
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6 }}
-          className="text-3xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-red-500"
+          className="text-3xl md:text-4xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-red-500"
+        >
+          {profile?.title || "Your Name"}
+        </motion.h1>
+
+        <motion.div
+          initial={{ y: -30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-xl md:text-2xl text-purple-400 min-h-[2.5rem] mb-2"
         >
           <TypeAnimation
-            sequence={[
-              "Full-Stack AI Engineer",
-              2000,
-              "Cloud Advocate",
-              2000,
-              "Technology Innovator",
-              2000,
-              "Data Specialist",
-              2000,
-            ]}
+            sequence={techStack.flatMap((tech) => [tech, 2000])}
             wrapper="span"
             cursor={true}
             repeat={Infinity}
+            style={{ display: "inline-block" }}
           />
-        </motion.h1>
+        </motion.div>
 
         <motion.p
           initial={{ y: 50, opacity: 0 }}
@@ -212,9 +259,8 @@ const HeroSection = ({ setActiveTab }) => {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="text-lg md:text-xl text-gray-300 mb-8"
         >
-          I design and deploy scalable AI-integrated applications and data
-          pipelines, combining modern web development with machine learning
-          systems.
+          {profile?.welcomeText ||
+            "I design and deploy scalable AI-integrated applications"}
         </motion.p>
 
         <motion.div
@@ -227,7 +273,7 @@ const HeroSection = ({ setActiveTab }) => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setActiveTab("projects")}
-            className="px-6 py-3 bg-purple-600 rounded-md font-medium"
+            className="px-6 py-3 bg-purple-600 rounded-md font-medium cursor-pointer"
           >
             View My Work
           </motion.button>
@@ -235,7 +281,7 @@ const HeroSection = ({ setActiveTab }) => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setActiveTab("contact")}
-            className="px-6 py-3 bg-transparent border border-purple-400 rounded-md font-medium"
+            className="px-6 py-3 bg-transparent border border-purple-400 rounded-md font-medium cursor-pointer"
           >
             Contact Me
           </motion.button>
@@ -255,15 +301,38 @@ const HeroSection = ({ setActiveTab }) => {
 };
 
 // About Section Component
+
 const AboutSection = () => {
-  const skills = [
-    { name: "AI/ML", level: 90 },
-    { name: "Azure Cloud", level: 85 },
-    { name: "Python", level: 95 },
-    { name: "Node.js", level: 80 },
-    { name: "React", level: 85 },
-    { name: "Data Engineering", level: 88 },
-  ];
+  const API_URL = "http://localhost:5000/api";
+  const [profile, setProfile] = useState(null);
+  const [skills, setSkills] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [profileRes, skillsRes] = await Promise.all([
+          axios.get(`${API_URL}/get-profile`),
+          axios.get(`${API_URL}/skills`),
+        ]);
+        setProfile(profileRes.data.profile);
+        setSkills(skillsRes.data.skills);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="py-20 max-w-7xl mx-auto -mt-16 flex justify-center">
+        <div className="animate-pulse text-gray-400">Loading profile...</div>
+      </div>
+    );
+  }
 
   return (
     <motion.section
@@ -271,20 +340,28 @@ const AboutSection = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
       className="py-20 max-w-7xl mx-auto -mt-16"
+      id="about"
     >
       <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
         About Me
       </h2>
 
-      <div className="grid md:grid-cols-[1fr_2fr] gap-12   items-center">
+      <div className="grid md:grid-cols-[1fr_2fr] gap-12 items-center px-4">
         <div className="flex justify-center items-center">
           <motion.div
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.6 }}
-            className=" h-max rounded-full overflow-hidden w-max"
+            className="h-max rounded-full overflow-hidden w-max border-2 border-purple-500/20"
           >
-            <img src="/melvins.png" alt="Profile" className=" h-60 w-60" />
+            <img
+              src={profile?.image?.url || "/melvins.png"}
+              alt="Profile"
+              className="h-60 w-60 object-cover"
+              onError={(e) => {
+                e.target.src = "/melvins.png";
+              }}
+            />
           </motion.div>
         </div>
 
@@ -293,15 +370,12 @@ const AboutSection = () => {
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <h3 className="text-2xl font-bold mb-4">
-            Full-Stack AI Engineer | Cloud & Data Systems
+          <h3 className="text-2xl font-bold mb-4 text-purple-300">
+            {profile?.title || "Full-Stack AI Engineer | Cloud & Data Systems"}
           </h3>
           <p className="text-gray-300 mb-6">
-            I specialize in building AI-integrated applications and scalable
-            data pipelines, with expertise across the entire development stack
-            from frontend interfaces to cloud infrastructure. My work bridges
-            the gap between cutting-edge AI research and production-ready
-            software solutions.
+            {profile?.bio ||
+              "I specialize in building AI-integrated applications and scalable data pipelines."}
           </p>
 
           <div className="space-y-6">
@@ -311,7 +385,7 @@ const AboutSection = () => {
               </h4>
               <div className="space-y-3">
                 {skills.map((skill) => (
-                  <div key={skill.name}>
+                  <div key={skill._id}>
                     <div className="flex justify-between mb-1">
                       <span className="text-sm font-medium">{skill.name}</span>
                       <span className="text-xs text-gray-400">
@@ -336,129 +410,103 @@ const AboutSection = () => {
     </motion.section>
   );
 };
-
 // Projects Section Component
 const ProjectsSection = () => {
-  const projects = [
-    {
-      title: "AI-Powered Analytics Platform",
-      description:
-        "Built with Azure OpenAI and Microsoft Fabric for real-time business insights with automated report generation and predictive analytics.",
-      tags: ["Azure", "AI", "Power BI", "Fabric"],
-      link: "#",
-      image: "/melvins.png",
-    },
-    {
-      title: "Enterprise RAG System",
-      description:
-        "Retrieval-Augmented Generation implementation for knowledge management with semantic search and document understanding.",
-      tags: ["LangChain", "LLMs", "Vector DB", "Azure AI"],
-      link: "#",
-      image: "/melvins.png",
-    },
-    {
-      title: "Cloud Data Pipeline",
-      description:
-        "ETL workflow processing TBs of data daily with Azure Data Factory, Databricks and Synapse Analytics.",
-      tags: ["ETL", "Azure", "PySpark", "Data Engineering"],
-      link: "#",
-      image: "/melvins.png",
-    },
-    {
-      title: "AI Agent Framework",
-      description:
-        "Custom autonomous agent system for automating business processes with LLM decision making.",
-      tags: ["AI Agents", "OpenAI", "Function Calling"],
-      link: "#",
-      image: "/melvins.png",
-    },
-    {
-      title: "Real-time Dashboard",
-      description:
-        "React-powered dashboard with WebSocket connections to display live data streams from IoT devices.",
-      tags: ["React", "WebSockets", "D3.js", "Tailwind"],
-      link: "#",
-      image: "/melvins.png",
-    },
-    {
-      title: "ML Model Serving API",
-      description:
-        "Scalable API for serving TensorFlow models with Django REST framework and Kubernetes.",
-      tags: ["MLOps", "Django", "TensorFlow", "K8s"],
-      link: "#",
-      image: "/melvins.png",
-    },
-  ];
+  axios.defaults.withCredentials = true;
+  const [projects, setprojects] = useState([]);
+  const [isLoading, setisLoading] = useState(false);
+  useEffect(() => {
+    (async () => {
+      setisLoading(false);
+      try {
+        setisLoading(true);
+        const response = await axios.get(
+          "http://localhost:5000/api/get-projects"
+        );
+        setprojects(response.data?.projects);
+        setisLoading(false);
+      } catch (error) {
+        setisLoading(false);
+        console.log(error);
+      }
+    })();
+  }, []);
 
   return (
-    <motion.section
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.8 }}
-      className="py-20 md:max-w-7xl md:mx-auto -mt-16"
-    >
-      <h2 className="text-3xl md:text-4xl  font-bold mb-12 text-center bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
-        My Projects
-      </h2>
+    <>
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <motion.section
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="py-20 md:max-w-7xl md:mx-auto -mt-16"
+        >
+          <h2 className="text-3xl md:text-4xl  font-bold mb-12 text-center bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
+            My Projects
+          </h2>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {projects.map((project, index) => (
-          <motion.div
-            key={index}
-            initial={{ y: 50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            whileHover={{ y: -10 }}
-            className="bg-gray-800/50 rounded-xl overflow-hidden border border-gray-700 hover:border-purple-500 transition-all group"
-          >
-            <div className="h-48 overflow-hidden">
-              <motion.img
-                src={project.image}
-                alt={project.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                whileHover={{ scale: 1.05 }}
-              />
-            </div>
-            <div className="p-6">
-              <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-              <p className="text-gray-300 mb-4">{project.description}</p>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {project.tags.map((tag) => (
-                  <motion.span
-                    key={tag}
-                    whileHover={{ scale: 1.05 }}
-                    className="px-2 py-1 bg-gray-700 rounded-full text-xs"
-                  >
-                    {tag}
-                  </motion.span>
-                ))}
-              </div>
-              <motion.a
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                href={project.link}
-                className="inline-flex items-center px-4 py-2 bg-purple-600 rounded-md text-sm font-medium"
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {projects.map((project, index) => (
+              <motion.div
+                key={index}
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ y: -10 }}
+                className="bg-gray-800/50 rounded-xl overflow-hidden border border-gray-700 hover:border-purple-500 transition-all group"
               >
-                View Project
-                <svg
-                  className="ml-2 w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M14 5l7 7m0 0l-7 7m7-7H3"
+                <div className="h-48 overflow-hidden">
+                  <motion.img
+                    src={project.image}
+                    alt={project.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    whileHover={{ scale: 1.05 }}
                   />
-                </svg>
-              </motion.a>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </motion.section>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-bold mb-2">{project.title}</h3>
+                  <p className="text-gray-300 mb-4">{project.description}</p>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {project.tags.map((tag) => (
+                      <motion.span
+                        key={tag}
+                        whileHover={{ scale: 1.05 }}
+                        className="px-2 py-1 bg-gray-700 rounded-full text-xs"
+                      >
+                        {tag}
+                      </motion.span>
+                    ))}
+                  </div>
+                  <motion.a
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    href={project.link}
+                    className="inline-flex items-center px-4 py-2 bg-purple-600 rounded-md text-sm font-medium"
+                  >
+                    View Project
+                    <svg
+                      className="ml-2 w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M14 5l7 7m0 0l-7 7m7-7H3"
+                      />
+                    </svg>
+                  </motion.a>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.section>
+      )}
+    </>
   );
 };
 

@@ -9,6 +9,13 @@ import {
   add_project,
   delete_project,
   get_projects,
+  get_messages,
+  update_profile,
+  get_profile,
+  delete_skill,
+  update_skill,
+  add_skill,
+  get_skills,
 } from "../controllers/portfolio_controller.js";
 import { verify_jwt } from "../middlewares/jwt.js";
 
@@ -23,5 +30,12 @@ router.post("/remove-admin", verify_jwt, remove_admin);
 router.post("/add-project", verify_jwt, add_project);
 router.post("/delete-project", verify_jwt, delete_project);
 router.get("/get-projects", verify_jwt, get_projects);
+router.get("/get-messages", verify_jwt, get_messages);
+router.post("/update-profile", verify_jwt, update_profile);
+router.get("/get-profile", verify_jwt, get_profile);
+router.get("/skills", verify_jwt, get_skills);
+router.post("/skills", verify_jwt, add_skill);
+router.put("/skills/:id", verify_jwt, update_skill);
+router.delete("/skills/:id", verify_jwt, delete_skill);
 
 export default router;
