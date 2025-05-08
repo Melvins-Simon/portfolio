@@ -128,7 +128,7 @@ npm run dev
 
 📬 **Contact System Workflow**
 
-```bash
+```mermaid
 sequenceDiagram
     participant User
     participant Frontend
