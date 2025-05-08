@@ -29,10 +29,13 @@ const SignIn = () => {
     setIsLoading(false);
     try {
       setIsLoading(true);
-      const res = await axios.post("http://localhost:5000/api/signin", {
-        email: formData.email,
-        password: formData.password,
-      });
+      const res = await axios.post(
+        "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/signin",
+        {
+          email: formData.email,
+          password: formData.password,
+        }
+      );
       setIsLoading(false);
       navigate("/admin");
       toast.success(res.data.message || "Login success!");

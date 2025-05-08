@@ -21,7 +21,9 @@ const AdminAccessControl = () => {
       setpageLoad(false);
       try {
         setpageLoad(true);
-        const res = await axios.get("http://localhost:5000/api/check-auth");
+        const res = await axios.get(
+          "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/check-auth"
+        );
         setRegisteredUsers(res.data.users);
         setpageLoad(false);
         setIsAuthenticated(true);
@@ -40,10 +42,13 @@ const AdminAccessControl = () => {
 
     try {
       setisLoading(true);
-      const res = await axios.post("http://localhost:5000/api/signin", {
-        email,
-        password,
-      });
+      const res = await axios.post(
+        "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/signin",
+        {
+          email,
+          password,
+        }
+      );
       setisLoading(false);
       toast.success(res.data.message || "Login success!");
       setRegisteredUsers(res.data.users);
@@ -63,7 +68,9 @@ const AdminAccessControl = () => {
     setpageLoad(false);
     try {
       setpageLoad(true);
-      const res = await axios.post("http://localhost:5000/api/signout");
+      const res = await axios.post(
+        "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/signout"
+      );
       setpageLoad(false);
       setIsAuthenticated(false);
       toast.success(res.data.message || "Logged out!");
@@ -80,10 +87,13 @@ const AdminAccessControl = () => {
 
     try {
       setisLoading(true);
-      const res = await axios.post("http://localhost:5000/api/add-admin", {
-        email: newUserEmail,
-        password: newUserPassword,
-      });
+      const res = await axios.post(
+        "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/add-admin",
+        {
+          email: newUserEmail,
+          password: newUserPassword,
+        }
+      );
       setisLoading(false);
       toast.success(res.data.message || "User addition success!");
       setIsAuthenticated(true);
@@ -105,9 +115,12 @@ const AdminAccessControl = () => {
     e.preventDefault();
     try {
       setisLoading(true);
-      const res = await axios.post("http://localhost:5000/api/remove-admin", {
-        id,
-      });
+      const res = await axios.post(
+        "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/remove-admin",
+        {
+          id,
+        }
+      );
       setisLoading(false);
       toast.success(res.data.message || "User deletion success!");
       setIsAuthenticated(true);

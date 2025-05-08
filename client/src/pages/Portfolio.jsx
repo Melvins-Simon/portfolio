@@ -19,7 +19,9 @@ const Portfolio = () => {
     setActiveTab(tab);
     if (tab === "admin") {
       try {
-        const res = await axios.get("http://localhost:5000/api/check-auth");
+        const res = await axios.get(
+          "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/check-auth"
+        );
         setIsAuthenticated(true);
         navigate("/admin");
         toast.success(res.data.message || "Reconnected!");
@@ -180,7 +182,8 @@ const Portfolio = () => {
 
 // Hero Section Component
 const HeroSection = ({ setActiveTab }) => {
-  const API_URL = "http://localhost:5000/api";
+  const API_URL =
+    "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api";
   axios.defaults.withCredentials = true;
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -303,7 +306,8 @@ const HeroSection = ({ setActiveTab }) => {
 // About Section Component
 
 const AboutSection = () => {
-  const API_URL = "http://localhost:5000/api";
+  const API_URL =
+    "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api";
   const [profile, setProfile] = useState(null);
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -421,7 +425,7 @@ const ProjectsSection = () => {
       try {
         setisLoading(true);
         const response = await axios.get(
-          "http://localhost:5000/api/get-projects"
+          "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/get-projects"
         );
         setprojects(response.data?.projects);
         setisLoading(false);
@@ -532,11 +536,14 @@ const ContactSection = () => {
     setisLoading(false);
     try {
       setisLoading(true);
-      const res = await axios.post("http://localhost:5000/api/send-message", {
-        username: formData.name,
-        email: formData.email,
-        message: formData.message,
-      });
+      const res = await axios.post(
+        "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/send-message",
+        {
+          username: formData.name,
+          email: formData.email,
+          message: formData.message,
+        }
+      );
       setisLoading(false);
       setFormData({ name: "", email: "", message: "" });
       toast.success(res.data.message || "Message submition success!");

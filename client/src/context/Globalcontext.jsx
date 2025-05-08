@@ -16,7 +16,9 @@ function Globalcontext({ children }) {
   useEffect(() => {
     (async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/check-auth");
+        const res = await axios.get(
+          "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/check-auth"
+        );
         setIsAuthenticated(true);
         toast.success(res.data.message || "Reconnected!");
       } catch (error) {
