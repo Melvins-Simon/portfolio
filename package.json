@@ -6,11 +6,12 @@
   "author": "melvinssimon",
   "type": "module",
   "main": "server.js",
-  "scripts": {
-    "start": "NODE_ENV=production node --env-file=server/.env server/server.js",
-    "server": "NODE_ENV=development node --watch --trace-warnings --env-file=server/.env server/server.js",
-    "build": "npm install && npm install --prefix client && npm run build --prefix client"
-  },
+"scripts": {
+  "start": "NODE_ENV=production node --no-warnings server/server.js",
+  "server": "NODE_ENV=development node --watch --trace-warnings server/server.js",
+  "build": "npm install && cd client && npm install && npm run build",
+  "test": "echo \"Error: no test specified\" && exit 1"
+},
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.6.1",
