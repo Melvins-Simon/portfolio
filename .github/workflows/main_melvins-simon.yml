@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: "22.x"
 
-      # Install and build client
+      # Build client
       - name: Build client
         working-directory: ./client
         run: |
@@ -32,18 +32,19 @@ jobs:
         working-directory: ./server
         run: npm install
 
-      # Create deployment package preserving client/dist structure
+      # Prepare deployment package with correct structure
       - name: Prepare deployment package
         run: |
           # Create deployment folder with original structure
           mkdir -p deployment
+
+          # Copy both server and client folders maintaining structure
           cp -r server/* deployment/
           mkdir -p deployment/client
           cp -r client/dist deployment/client/
 
-          # Remove development files
+          # Clean up unnecessary files
           rm -rf deployment/node_modules
-          rm -rf deployment/client/node_modules
 
           # Zip the deployment folder
           cd deployment && zip -r ../release.zip ./*
@@ -69,6 +70,10 @@ jobs:
 
       - name: Unzip artifact for deployment
         run: unzip release.zip -d deployment
+
+      - name: Install production dependencies
+        working-directory: ./deployment
+        run: npm install --production
 
       - name: "Deploy to Azure Web App"
         id: deploy-to-webapp
