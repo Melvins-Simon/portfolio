@@ -27,26 +27,27 @@ jobs:
           npm install
           npm run build
 
-      # Install server dependencies
+      # Install server dependencies (from root)
       - name: Install server dependencies
-        working-directory: ./server
         run: npm install
 
-      # Prepare deployment package with correct structure
+      # Prepare deployment package
       - name: Prepare deployment package
         run: |
-          # Create deployment folder with original structure
+          # Create deployment folder
           mkdir -p deployment
 
-          # Copy both server and client folders maintaining structure
-          cp -r server/* deployment/
+          # Copy server files (from root)
+          cp -r package.json package-lock.json server/ deployment/
+
+          # Copy built client files
           mkdir -p deployment/client
           cp -r client/dist deployment/client/
 
-          # Clean up unnecessary files
+          # Clean up
           rm -rf deployment/node_modules
 
-          # Zip the deployment folder
+          # Zip for deployment
           cd deployment && zip -r ../release.zip ./*
 
       - name: Upload artifact for deployment job
