@@ -22,18 +22,24 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '22.x'
-          cache: 'npm'
+          node-version: "22.x"
+          cache: "npm"
           cache-dependency-path: |
             ${{ env.CLIENT_DIR }}/package-lock.json
             ${{ env.SERVER_DIR }}/package-lock.json
 
-      # Build Client
-      - name: Build React App
+      # Install Client Dependencies FIRST
+      - name: Install Client Dependencies
         working-directory: ${{ env.CLIENT_DIR }}
         run: |
           npm ci
-          npm run build
+          # Explicitly install Vite plugins if needed
+          npm install @vitejs/plugin-react vite
+
+      # Build Client
+      - name: Build React App
+        working-directory: ${{ env.CLIENT_DIR }}
+        run: npm run build
 
       # Install Server Dependencies
       - name: Install Server Dependencies
@@ -46,7 +52,7 @@ jobs:
           mkdir -p deployment
           # Copy server files
           cp -r ${{ env.SERVER_DIR }}/* deployment/
-          # Create the exact ../client/dist structure your server expects
+          # Create the exact ../client/dist structure
           mkdir -p client/dist
           cp -r ${{ env.CLIENT_DIR }}/dist/* client/dist/
           # Keep root files
