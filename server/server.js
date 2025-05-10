@@ -18,7 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     origin: [
-      `https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net`,
+      "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net",
       "http://localhost:5173",
     ],
     credentials: true,
