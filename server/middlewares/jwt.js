@@ -10,7 +10,7 @@ export const gen_jwt = async (res, user_id) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     return token;
   } catch (error) {
@@ -18,21 +18,45 @@ export const gen_jwt = async (res, user_id) => {
   }
 };
 
-export const verify_jwt = async (req, res, next) => {
+export const verify_jwt = (req, res, next) => {
   const token = req.cookies.auth_token;
-  try {
-    if (!token)
+  const publicRoutes = [
+    "/api/send-message",
+    "/api/get-messages",
+    "/api/signin",
+    "/api/signout",
+    "/api/get-projects",
+    "/api/get-profile",
+    "/api/skills",
+  ];
+
+  if (publicRoutes.includes(req.path)) {
+    return next();
+  }
+
+  if (!token) {
+    return res.status(401).clearCookie("auth_token").json({
+      success: false,
+      message: "Not authenticated - please login",
+    });
+  }
+
+  jwt.verify(token, process.env.SECRETE_KEY, (err, decoded) => {
+    if (err) {
       return res
         .status(403)
-        .json({ success: false, message: "Invalid or expired signature!" });
-    const decoded = jwt.verify(token, process.env.SECRETE_KEY);
-    if (!decoded)
-      return res
-        .status(403)
-        .json({ success: false, message: "Invalid or expired signature!" });
+        .clearCookie("auth_token")
+        .json({
+          success: false,
+          message:
+            err.name === "TokenExpiredError"
+              ? "Session expired - please login again"
+              : "Invalid authentication",
+          shouldLogout: true,
+        });
+    }
+
     req.user_id = decoded.user_id;
     next();
-  } catch (error) {
-    console.log(error.message);
-  }
+  });
 };

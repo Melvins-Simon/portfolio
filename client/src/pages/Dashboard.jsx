@@ -284,7 +284,9 @@ const Dashboard = () => {
           />
         )}
 
-        {activeTab === "messages" && <MessagesTab messages={messages} />}
+        {activeTab === "messages" && (
+          <MessagesTab messages={messages} setMessages={setMessages} />
+        )}
         {activeTab === "hero" && Handlehero()}
       </main>
     </div>
@@ -947,8 +949,33 @@ const SocialTab = ({ socialLinks, updateSocialLink }) => {
   );
 };
 
-// Messages Management Tab
-const MessagesTab = ({ messages }) => {
+// Messages Tab
+const MessagesTab = ({ messages, setMessages }) => {
+  const API_URL =
+    import.meta.env.MODE === "production"
+      ? "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api"
+      : "http://localhost:5000/api";
+
+  const handleDelete = async (messageId) => {
+    if (window.confirm("Are you sure you want to delete this message?")) {
+      try {
+        const response = await axios.delete(
+          `${API_URL}/delete-message/${messageId}`
+        );
+        toast.success(response.data.message);
+
+        // Remove the deleted message from state
+        setMessages((prevMessages) =>
+          prevMessages.filter((msg) => msg.id !== messageId)
+        );
+      } catch (error) {
+        toast.error(
+          error.response?.data?.message || "Failed to delete message"
+        );
+      }
+    }
+  };
+
   return (
     <motion.section
       initial={{ opacity: 0 }}
@@ -956,28 +983,35 @@ const MessagesTab = ({ messages }) => {
       transition={{ duration: 0.8 }}
       className="py-8 max-w-7xl mx-auto"
     >
-      <h2 className="text-3xl  font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
+      <h2 className="text-3xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
         Messages
       </h2>
 
       <div className="space-y-4">
         {messages.length > 0 ? (
-          messages.map((message) => (
+          [...messages].reverse().map((message) => (
             <div
               key={message.id}
-              className="bg-gray-800/50 p-4 rounded-lg border border-gray-700"
+              className="bg-gray-800/50 p-4 rounded-lg border border-gray-700 hover:border-purple-500/30 transition-colors duration-200"
             >
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <h3 className="font-medium">{message.name}</h3>
-                  <p className="text-sm text-purple-400">{message.email}</p>
+                  <h3 className="font-medium text-gray-100">{message.name}</h3>
+                  <p className="text-sm text-purple-400 hover:text-purple-300 transition-colors cursor-pointer">
+                    {message.email}
+                  </p>
                 </div>
                 <span className="text-sm text-gray-400">{message.date}</span>
               </div>
-              <p className="text-gray-300 mt-2">{message.message}</p>
+              <p className="text-gray-300 mt-2 whitespace-pre-line">
+                {message.message}
+              </p>
               <div className="mt-3 flex justify-end gap-2">
-                <button className="px-3 py-1 bg-purple-600 hover:bg-purple-500 cursor-pointer rounded text-sm">
-                  Reply
+                <button
+                  onClick={() => handleDelete(message.id)}
+                  className="px-3 py-1 bg-red-600/90 hover:bg-red-500 text-white rounded text-sm transition-colors cursor-pointer"
+                >
+                  Delete
                 </button>
               </div>
             </div>
@@ -989,5 +1023,4 @@ const MessagesTab = ({ messages }) => {
     </motion.section>
   );
 };
-
 export default Dashboard;

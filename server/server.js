@@ -19,7 +19,7 @@ app.use(
   cors({
     origin: [
       `https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net`,
-      "http://localhost:5000",
+      "http://localhost:5173",
     ],
     credentials: true,
   })
@@ -36,7 +36,7 @@ app.get("/health", (req, res) => res.status(200).send("OK"));
 
 app.use("/api", router);
 
-if (process.env.NODE_ENV === "development") {
+if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../client/dist")));
   app.get("/*splat", (req, res) => {
     res.sendFile(path.join(__dirname, "../client/dist/index.html"));

@@ -16,26 +16,32 @@ import {
   update_skill,
   add_skill,
   get_skills,
+  delete_message,
 } from "../controllers/portfolio_controller.js";
 import { verify_jwt } from "../middlewares/jwt.js";
 
 const router = Router();
 
+// ===== Unprotected Routes =====
 router.post("/send-message", recieve_message);
-router.post("/add-admin", verify_jwt, add_admin);
 router.post("/signin", signin);
-router.get("/check-auth", verify_jwt, check_auth);
 router.post("/signout", logout);
-router.post("/remove-admin", verify_jwt, remove_admin);
-router.post("/add-project", verify_jwt, add_project);
-router.post("/delete-project", verify_jwt, delete_project);
 router.get("/get-projects", get_projects);
 router.get("/get-messages", get_messages);
-router.post("/update-profile", update_profile);
 router.get("/get-profile", get_profile);
 router.get("/skills", get_skills);
-router.post("/skills", verify_jwt, add_skill);
-router.put("/skills/:id", verify_jwt, update_skill);
-router.delete("/skills/:id", verify_jwt, delete_skill);
+
+// ===== Protected Routes (require JWT) =====
+router.use(verify_jwt);
+router.post("/add-admin", add_admin);
+router.get("/check-auth", check_auth);
+router.post("/remove-admin", remove_admin);
+router.post("/add-project", add_project);
+router.post("/delete-project", delete_project);
+router.delete("/delete-message/:id", delete_message);
+router.post("/update-profile", update_profile);
+router.post("/skills", add_skill);
+router.put("/skills/:id", update_skill);
+router.delete("/skills/:id", delete_skill);
 
 export default router;

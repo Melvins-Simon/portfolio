@@ -326,6 +326,31 @@ export const get_messages = async (req, res) => {
   }
 };
 
+// Delete Message
+export const delete_message = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedMessage = await Message.findByIdAndDelete(id);
+
+    if (!deletedMessage) {
+      return res.status(404).json({
+        success: false,
+        message: "Message not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Message deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete Message",
+    });
+  }
+};
+
 // Profile
 export const update_profile = async (req, res) => {
   try {
