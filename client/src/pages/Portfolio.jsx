@@ -20,7 +20,9 @@ const Portfolio = () => {
     if (tab === "admin") {
       try {
         const res = await axios.get(
-          "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/check-auth"
+          import.meta.env.MODE === "production"
+            ? "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/check-auth"
+            : "http://localhost:5000/api/check-auth"
         );
         setIsAuthenticated(true);
         navigate("/admin");
@@ -183,7 +185,9 @@ const Portfolio = () => {
 // Hero Section Component
 const HeroSection = ({ setActiveTab }) => {
   const API_URL =
-    "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api";
+    import.meta.env.MODE === "production"
+      ? "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api"
+      : "http://localhost:5000/api";
   axios.defaults.withCredentials = true;
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -307,7 +311,9 @@ const HeroSection = ({ setActiveTab }) => {
 
 const AboutSection = () => {
   const API_URL =
-    "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api";
+    import.meta.env.MODE === "production"
+      ? "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api"
+      : "http://localhost:5000/api";
   const [profile, setProfile] = useState(null);
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -425,7 +431,9 @@ const ProjectsSection = () => {
       try {
         setisLoading(true);
         const response = await axios.get(
-          "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/get-projects"
+          import.meta.env.MODE === "production"
+            ? "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/get-projects"
+            : "http://localhost:5000/api/get-projects"
         );
         setprojects(response.data?.projects);
         setisLoading(false);
@@ -537,7 +545,9 @@ const ContactSection = () => {
     try {
       setisLoading(true);
       const res = await axios.post(
-        "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/send-message",
+        import.meta.env.MODE === "production"
+          ? "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/send-message"
+          : "http://localhost:5000/api/send-message",
         {
           username: formData.name,
           email: formData.email,

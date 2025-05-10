@@ -22,7 +22,9 @@ const AdminAccessControl = () => {
       try {
         setpageLoad(true);
         const res = await axios.get(
-          "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/check-auth"
+          import.meta.env.MODE === "production"
+            ? "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/check-auth"
+            : "http://localhost:5000/api/check-auth"
         );
         setRegisteredUsers(res.data.users);
         setpageLoad(false);
@@ -43,7 +45,9 @@ const AdminAccessControl = () => {
     try {
       setisLoading(true);
       const res = await axios.post(
-        "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/signin",
+        import.meta.env.MODE === "production"
+          ? "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/signin"
+          : "http://localhost:5000/api/signin",
         {
           email,
           password,
@@ -69,7 +73,9 @@ const AdminAccessControl = () => {
     try {
       setpageLoad(true);
       const res = await axios.post(
-        "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/signout"
+        import.meta.env.MODE === "production"
+          ? "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/signout"
+          : "http://localhost:5000/api/signout"
       );
       setpageLoad(false);
       setIsAuthenticated(false);
@@ -88,7 +94,9 @@ const AdminAccessControl = () => {
     try {
       setisLoading(true);
       const res = await axios.post(
-        "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/add-admin",
+        import.meta.env.MODE === "production"
+          ? "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/add-admin"
+          : "http://localhost:5000/api/add-admin",
         {
           email: newUserEmail,
           password: newUserPassword,
@@ -116,7 +124,9 @@ const AdminAccessControl = () => {
     try {
       setisLoading(true);
       const res = await axios.post(
-        "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/remove-admin",
+        import.meta.env.MODE === "production"
+          ? "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/remove-admin"
+          : "http://localhost:5000/api/remove-admin",
         {
           id,
         }

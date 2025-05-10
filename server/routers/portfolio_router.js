@@ -22,7 +22,7 @@ import { verify_jwt } from "../middlewares/jwt.js";
 const router = Router();
 
 router.post("/send-message", recieve_message);
-router.post("/add-admin", add_admin);
+router.post("/add-admin", verify_jwt, add_admin);
 router.post("/signin", signin);
 router.get("/check-auth", verify_jwt, check_auth);
 router.post("/signout", logout);
@@ -34,8 +34,8 @@ router.get("/get-messages", get_messages);
 router.post("/update-profile", update_profile);
 router.get("/get-profile", get_profile);
 router.get("/skills", get_skills);
-router.post("/skills", add_skill);
-router.put("/skills/:id", update_skill);
-router.delete("/skills/:id", delete_skill);
+router.post("/skills", verify_jwt, add_skill);
+router.put("/skills/:id", verify_jwt, update_skill);
+router.delete("/skills/:id", verify_jwt, delete_skill);
 
 export default router;

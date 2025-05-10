@@ -9,7 +9,9 @@ import toast from "react-hot-toast";
 const Dashboard = () => {
   axios.defaults.withCredentials = true;
   const API_URL =
-    "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api";
+    import.meta.env.MODE === "production"
+      ? "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api"
+      : "http://localhost:5000/api";
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { proj, setproj } = useContext(Globalstate);
@@ -97,7 +99,9 @@ const Dashboard = () => {
 
   const deleteProject = async (id) => {
     const API_URL =
-      "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api";
+      import.meta.env.MODE === "production"
+        ? "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api"
+        : "http://localhost:5000/api";
     try {
       setProjects(projects.filter((project) => project.id !== id));
       showNotification("Project deleted");
@@ -295,7 +299,9 @@ const ProjectsTab = ({
   addProject,
 }) => {
   const API_URL =
-    "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api";
+    import.meta.env.MODE === "production"
+      ? "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api"
+      : "http://localhost:5000/api";
   axios.defaults.withCredentials = true;
   const [editingId, setEditingId] = useState(null);
   const [newTag, setNewTag] = useState("");
@@ -589,7 +595,9 @@ const ProfileTab = ({ profile, updateProfile }) => {
 
     try {
       const res = await axios.post(
-        "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/update-profile",
+        import.meta.env.MODE === "production"
+          ? "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/update-profile"
+          : "http://localhost:5000/api/update-profile",
         formData,
         {
           headers: {
@@ -778,7 +786,9 @@ const ProfileTab = ({ profile, updateProfile }) => {
 // Skills Management Tab
 const SkillsTab = () => {
   const API_URL =
-    "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api";
+    import.meta.env.MODE === "production"
+      ? "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api"
+      : "http://localhost:5000/api";
   const [skills, setSkills] = useState([]);
   const [newSkill, setNewSkill] = useState("");
   const [loading, setLoading] = useState(true);

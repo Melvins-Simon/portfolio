@@ -30,7 +30,9 @@ const SignIn = () => {
     try {
       setIsLoading(true);
       const res = await axios.post(
-        "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/signin",
+        import.meta.env.MODE === "production"
+          ? "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/signin"
+          : "http://localhost:5000/api/signin",
         {
           email: formData.email,
           password: formData.password,

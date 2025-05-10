@@ -36,7 +36,7 @@ app.get("/health", (req, res) => res.status(200).send("OK"));
 
 app.use("/api", router);
 
-if (process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV === "development") {
   app.use(express.static(path.join(__dirname, "../client/dist")));
   app.get("/*splat", (req, res) => {
     res.sendFile(path.join(__dirname, "../client/dist/index.html"));
@@ -51,5 +51,7 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   condb();
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  console.log(
+    `🚀Server running in ${process.env.NODE_ENV} mode on port http://localhost:${PORT}`
+  );
 });

@@ -17,7 +17,9 @@ function Globalcontext({ children }) {
     (async () => {
       try {
         const res = await axios.get(
-          "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/check-auth"
+          import.meta.env.MODE === "production"
+            ? "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net/api/check-auth"
+            : "http://localhost:5000/api/check-auth"
         );
         setIsAuthenticated(true);
         toast.success(res.data.message || "Reconnected!");
