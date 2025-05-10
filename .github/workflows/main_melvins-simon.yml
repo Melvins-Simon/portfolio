@@ -28,13 +28,14 @@ jobs:
             ${{ env.CLIENT_DIR }}/package-lock.json
             ${{ env.SERVER_DIR }}/package-lock.json
 
-      # Install Client Dependencies FIRST
-      - name: Install Client Dependencies
+      # Clean installation for client
+      - name: Clean Install Client Dependencies
         working-directory: ${{ env.CLIENT_DIR }}
         run: |
-          npm ci
-          # Explicitly install Vite plugins if needed
-          npm install @vitejs/plugin-react vite
+          rm -rf node_modules
+          rm -f package-lock.json
+          npm install
+          npm install @vitejs/plugin-react vite @types/react @types/react-dom --save-dev
 
       # Build Client
       - name: Build React App
