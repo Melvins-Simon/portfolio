@@ -19,7 +19,7 @@ app.use(
   cors({
     origin: [
       "https://melvins-simon-f2dqa4bcedcpefbq.eastus-01.azurewebsites.net",
-      "http://localhost:5173",
+      "http://localhost:5000",
     ],
     credentials: true,
   })
