@@ -15,37 +15,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
           node-version: "22.x"
 
-      # Install client dependencies and build
-      - name: Build client (React)
+      # Install and build client
+      - name: Build client
+        working-directory: ./client
         run: |
-          cd client
           npm install
           npm run build
 
       # Install server dependencies
       - name: Install server dependencies
-        run: |
-          cd server
-          npm install
+        working-directory: ./server
+        run: npm install
 
-      # Copy client build to server
-      - name: Copy client build to server
+      # Create deployment package preserving client/dist structure
+      - name: Prepare deployment package
         run: |
-          rm -rf server/client
-          cp -r client/dist server/client
+          # Create deployment folder with original structure
+          mkdir -p deployment
+          cp -r server/* deployment/
+          mkdir -p deployment/client
+          cp -r client/dist deployment/client/
 
-      # Zip only the server folder (with built client inside)
-      - name: Zip artifact for deployment
-        run: |
-          cd server
-          zip -r ../release.zip .
+          # Remove development files
+          rm -rf deployment/node_modules
+          rm -rf deployment/client/node_modules
 
-      - name: Upload artifact
+          # Zip the deployment folder
+          cd deployment && zip -r ../release.zip ./*
+
+      - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: node-app
@@ -59,19 +62,19 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - name: Download artifact
+      - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: node-app
 
-      - name: Unzip artifact
-        run: unzip release.zip
+      - name: Unzip artifact for deployment
+        run: unzip release.zip -d deployment
 
-      - name: Deploy to Azure Web App
+      - name: "Deploy to Azure Web App"
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: "melvins-simon"
           slot-name: "Production"
-          package: .
+          package: ./deployment
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_41F3C30CB4AC45AAA8A277485046ABDC }}
